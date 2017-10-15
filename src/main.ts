@@ -13,13 +13,15 @@ class Main{
   constructor(){
     this.turn = 0
     this.Init()
+
     Api.sendMovement(1)
+    //Agent.life++;
   }
 
   public async Init(){
-    console.log(`Current Turn is: ${this.turn}`)
     //Check game status
      let gameStatus = await Api.gameStatus()
+     console.log(`Current Turn is: ${this.turn}`)
       this.turn = gameStatus['turno']
       if(this.turn == -1) {
         console.log(`Game over`)
@@ -37,9 +39,10 @@ class Main{
         if(gameStatus['tablero']){
           Agent.strategy(gameStatus['tablero'])
         }
+        console.log("===========");
         //Call recursively
         this.Init()
-    }
+      }
   }
 
 }

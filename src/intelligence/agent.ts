@@ -1,53 +1,86 @@
-import Neural from '../intelligence/neural';
 import Api from '../api/request';
-import 'dotenv/config'
+import 'dotenv/config';
+import { NeuralNetwork } from './sypnatic';
 
 class Agent {
 
-    public_code
-    board
+    private public_code;
+    private neuralNetwork = new NeuralNetwork();
+    private myPositionBefore;
+    public life = 0;
+    private lifeBefore = 0;
 
     constructor(){
       this.public_code = process.env.PUBLIC_CODE
     }
 
     public async strategy(board){
-      this.board = board
-      //PUT YOUR LOGIC HERE
-      //=======================================================
-      //Find your current position on the board using your public_code
-      let myPositon =this.getMyPosition()
-      console.log(myPositon)
-      //Obtain inputs based on environment analize
-      let inputs = this.analyzer()
-      
-      //Send the inputs to your neural network and make your movement based on this
-      Api.sendMovement(Neural.init(inputs))
-      .then(response=> {
-         return  (response)
-      })
-      //=======================================================
-    }
+      let myPositon = this.getMyPosition(board);
+      let convertirTableroAModelo = this.analyzer(myPositon, board);
+      let movement = this.neuralNetwork.neuralNetwork(convertirTableroAModelo);
 
-    public getMyPosition(){
-      console.log(this.board)
-      let me = this.board.find((iam)=>iam.usuario === +this.public_code)
-      console.log(typeof(me))
-      return me.casilla
-    }
-
-    public analyzer(){
-    /*let letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
-      let matriz = [];
-      for(let i = 0; i < letters.length; i++){
-        for(let j = 0; j < letters.length; j++){
-          //matriz.push();
-          this.board.find(( )=>player.casilla === (letters[i] + (i + 1))); 
-        }  
+      if(myPositon == this.myPositionBefore){
+        this.life = (movement == 0)? this.lifeBefore + 1 : 0;
+      } else {
+        this.life = (movement == 0)? this.life + 1 : 0;
       }
-      console.log('Environment analyzer...')
-      return*/
+
+      Api.sendMovement(movement)
+      .then(response=> {
+        this.myPositionBefore = myPositon;
+        this.lifeBefore = this.life;
+        return  (response)
+      })
+    }
+
+    public getMyPosition(board){
+      let me = board.find((iam)=>iam.usuario === +this.public_code);
+      return (me)? me.casilla : undefined;;
+    }
+
+    public analyzer(mePosition, board){
+      let letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
+      let matriz = [];
+      let letter = mePosition.substring(0, 1);
+      let column = parseInt(mePosition.substring(1, mePosition.length));
+      for (let i = (letters.indexOf(letter) - 1); i <= (letters.indexOf(letter) + 3); ++i) {
+          matriz.push([]);
+          for (let j = (column - 2); j < (column + 3); ++j) {
+            if(i > 0 && j > 0 && i <= 10 && j <= 10){
+              let letter_exist = (letters[i - 1]? letters[i - 1]: -1);
+              if(letter_exist + "" + j == mePosition){
+                matriz[matriz.length - 1].push((this.life == 3)? 1: 0);
+              } else {
+                let user_exist = board.find((box) => (letter_exist + "" + j) == box.casilla);
+                let value = (user_exist && user_exist.color == 'white')? 1 : ((user_exist && user_exist.color == 'black')? 2: 0);
+                matriz[matriz.length - 1].push(value);
+              }
+            } else {
+              matriz[matriz.length - 1].push(0);
+            }
+          }
+      }      
+
+      let array = [];
+      for (var i = 0; i < matriz.length; ++i) {
+        for (var j = 0; j < matriz[i].length; ++j) {
+          array.push(matriz[i][j]);
+        }
+      }
+
+      return array;
     }
 }
 
 export default new Agent()
+
+
+
+
+
+
+
+
+
+
+
