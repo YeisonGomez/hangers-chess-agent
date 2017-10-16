@@ -14,7 +14,7 @@ class Main{
     this.turn = 0
     this.Init()
 
-    Api.sendMovement(1)
+    Api.sendMovement(2)
     //Agent.life++;
   }
 

@@ -7,7 +7,7 @@ class Agent {
     private public_code;
     private neuralNetwork = new NeuralNetwork();
     private myPositionBefore;
-    public life = 0;
+    public life = 3;
     private lifeBefore = 0;
 
     constructor(){
@@ -19,17 +19,13 @@ class Agent {
       let convertirTableroAModelo = this.analyzer(myPositon, board);
       let movement = this.neuralNetwork.neuralNetwork(convertirTableroAModelo);
 
-      if(myPositon == this.myPositionBefore){
-        this.life = (movement == 0)? this.lifeBefore + 1 : 0;
-      } else {
-        this.life = (movement == 0)? this.life + 1 : 0;
-      }
+      this.life = (myPositon == this.myPositionBefore)? ((movement == 0)? this.life + 1 : 0) : ((movement == 0)? this.lifeBefore + 1 : 0);      
 
       Api.sendMovement(movement)
       .then(response=> {
         this.myPositionBefore = myPositon;
         this.lifeBefore = this.life;
-        return  (response)
+        return (response)
       })
     }
 
