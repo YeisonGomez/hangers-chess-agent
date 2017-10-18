@@ -23,7 +23,8 @@ class Api{
           return(response.data)
         })
         .catch(function (error) {
-          return(this.ErrorHandler(error));
+          console.log("El servidor esta apagado")
+          throw new Error(error);
         })
     }
 
@@ -44,16 +45,10 @@ class Api{
           resolve(response.data);
         })
         .catch(function (error) {
-          reject(this.ErrorHandler(error));
+          console.log("El servidor esta apagado")
+          throw new Error(error);
         })
       })
-    }
-
-    public ErrorHandler(e){
-      console.log((e.code == `ENETUNREACH`)
-      ?`Network error`
-      :`Eror ${e.code}`)
-      throw new Error(e)
     }
 }
 
